@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz en Python avec Brython</title>
+  <script src="https://cdn.jsdelivr.net/npm/brython@3.10.5/brython.min.js"></script>
+  <style>
+    .corps {
+      font-family: Arial, sans-serif;
+      margin: 0; /* Supprime les marges par défaut pour maximiser l'espace */
+      padding: 0;
+      background-color: #121234;
+      color: #fff;
+      height: 100vh; /* Fait en sorte que le corps prenne toute la hauteur de la fenêtre */
+      display: flex; /* Utilisation de Flexbox pour centrer le contenu */
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    h1 {
+      color: #f57c00;
+      text-align: center;
+    }
+
+    #quiz-container {
+      display: flex;
+      flex-direction: column; /* Aligne les éléments verticalement */
+      align-items: center; /* Centre les éléments horizontalement */
+      justify-content: center; /* Centre verticalement */
+      width: 90%; /* Limite la largeur pour une meilleure lisibilité */
+      max-width: 800px; /* Définit une largeur maximale */
+      background-color: #242446;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.5);
+    }
+
+    #start-button,
+    #submit-answer,
+    #restart-button,
+    #validate-password {
+      /* ... autres styles ... */
+      box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 18px;
+    }
+
+    #afficherIndice {
+      display: none;
+      background-color: #545250e3;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      border-radius: 5px;
+      box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+      position: absolute;
+      top: 80%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .question {
+      margin-bottom: 20px;
+      color: #f57c00;
+    }
+
+    .result {
+      font-weight: bold;
+    }
+
+    .option {
+      background-color: #242446;
+      border: 1px solid #f57c00;
+      padding: 10px;
+      cursor: pointer;
+      list-style: none;
+    }
+
+    .option:hover {
+      background-color: #363658;
+    }
+
+    .correct-answers {
+      margin-top: 20px;
+      font-style: italic;
+      color: #f57c00;
+      text-align: center;
+    }
+
+    .error {
+      color: #f57c00;
+      font-size: 0.9em;
+    }
+
+    #indice {
+      display: none;
+      text-align: center;
+    }
+
+    #start-button,
+    #submit-answer,
+    #restart-button,
+    #validate-password,
+    #afficherIndice {
+      background-color: #f57c00;
+      color: #fff;
+      padding: 10px 20px;
+      border: none;
+      cursor: pointer;
+      border-radius: 10px;
+    }
+    
+    #submit-answer {
+      margin-left: 10px; /* Décale le bouton "Valider" plus à droite */
+    }
+
+    #user-answer {
+      margin-left: 50px; /* Décale la barre de saisie "Votre réponse" vers la droite */
+    }
+  </style>
+</head>
+
+<body class="corps" onload="brython()">
+  <h1>Quiz sur la Sécurité Informatique</h1>
+  <div id="quiz-container">
+    <p id="instructions">Cliquez sur "Démarrer le Quiz" pour commencer.</p>
+    <button id="start-button">Démarrer le Quiz</button>
+  </div>
+  <div id="correct-answers" class="correct-answers"></div>
+
+  <p id="indice">biip biip, biip bip, bip bip bip</p>
+  <button id="afficherIndice" style="display: none;">Afficher l'indice</button>
+  <script>
+    function afficherBouton() {
+      document.getElementById("afficherIndice").style.display = "block";
+    }
+
+    function afficherIndice() {
+      document.getElementById("indice").style.display = "block";
+    }
+
+    // Appeler la fonction pour afficher le bouton après 5 minutes (300000 millisecondes)
+    setTimeout(afficherBouton, 300000);
+
+    // Écouter le clic sur le bouton pour afficher l'indice
+    document.getElementById("afficherIndice").addEventListener("click", afficherIndice);
+  </script>
+  <script type="text/python">
+        from browser import document, window, html
+
+        questions = [
+            ["Quel est le principal rôle d'un antivirus ?",
+             "O : Accélérer la vitesse de votre ordinateur",
+             "P : Protéger votre ordinateur contre les logiciels malveillants",
+             "Q : Améliorer la qualité de vos vidéos en ligne",
+             "R : Organiser vos fichiers",
+             "P : Protéger votre ordinateur contre les logiciels malveillants"],
+
+            ["Qu'est-ce qu'un phishing ?",
+             "G : Une technique de pêche en haute mer",
+             "H : Une tentative d'obtenir des informations confidentielles en se faisant passer pour une personne ou une organisation de confiance",
+             "I : Un virus informatique qui endommage le matériel",
+             "J : Une méthode pour accélérer une connexion internet",
+             "H : Une tentative d'obtenir des informations confidentielles en se faisant passer pour une personne ou une organisation de confiance"],
+
+            ["Pourquoi est-il important de mettre à jour régulièrement son système d'exploitation ?",
+             "N : Pour avoir accès aux dernières fonctionnalités",
+             "O : Pour corriger les vulnérabilités de sécurité",
+             "P : Pour augmenter la taille de la mémoire vive",
+             "Q : Pour rendre l'ordinateur plus silencieux",
+             "O : Pour corriger les vulnérabilités de sécurité"],
+
+            ["Quel est le principal risque lié à l'utilisation de réseaux Wi-Fi publics non sécurisés ?",
+             "O : Une surchauffe de l'ordinateur",
+             "P : Une diminution de la vitesse de connexion",
+             "Q : L'interception de vos données par des tiers",
+             "R : Une panne de l'ordinateur",
+             "Q : L'interception de vos données par des tiers"],
+
+            ["Qu'est-ce que le chiffrement de César ?",
+             "T : Une méthode de compression de fichiers pour réduire leur taille",
+             "U : Une méthode de chiffrement par substitution qui décale chaque lettre d'un nombre fixe de places dans l'alphabet",
+             "V : Un algorithme de hachage utilisé pour vérifier l'intégrité des données",
+             "W : Une technique de cryptage asymétrique nécessitant une clé publique et une clé privée",
+             "U : Une méthode de chiffrement par substitution qui décale chaque lettre d'un nombre fixe de places dans l'alphabet"],
+
+            ["Quelle est la meilleure pratique pour protéger un mot de passe ?",
+             "C : Utiliser le même mot de passe pour tous ses comptes",
+             "D : Choisir un mot de passe court et facile à retenir",
+             "E : Utiliser une combinaison de lettres majuscules, minuscules, chiffres et caractères spéciaux",
+             "F : Écrire son mot de passe sur un post-it",
+             "E : Utiliser une combinaison de lettres majuscules, minuscules, chiffres et caractères spéciaux"]
+        ]
+
+        def start_quiz(event):
+            container = document["quiz-container"]
+            answers_container = document["correct-answers"]
+            container.clear()
+            answers_container.clear()
+            current_index = 0
+            score = 0
+            correct_answers = []
+
+            def show_question():
+                if current_index < len(questions):
+                    question = questions[current_index]
+                    options_list = html.UL()
+                    for q in question[1:5]:
+                        option = html.LI(q, Class="option", style={"cursor": "pointer"})
+
+                        def on_option_click(event, value=q.split(":")[0].strip()):
+                            document["user-answer"].value = value
+
+                        option.bind("click", on_option_click)
+                        options_list <= option
+
+                    container <= html.DIV(
+                        html.P(question[0], Class="question") +
+                        options_list +
+                        html.INPUT(type="text", id="user-answer", placeholder="Votre réponse", Class="answer-input") +
+                        html.BUTTON("Valider", id="submit-answer") +
+                        html.P("", id="error-message", Class="error")
+                    )
+
+                    document["user-answer"].focus()
+
+                    def validate_answer(event):
+                        nonlocal score, current_index
+                        user_input = document["user-answer"].value.upper()
+                        error_message = document["error-message"]
+
+                        if not user_input:
+                            error_message.text = "Veuillez saisir une réponse avant de continuer."
+                            return
+
+                        error_message.text = ""
+                        correct = question[5][0]
+
+                        if user_input == correct:
+                            score += 1
+                            correct_answers.append(correct)
+                            container <= html.P("-- VRAI --", Class="result")
+                        else:
+                            container <= html.P("-- FAUX --", Class="result")
+
+                        answers_container.text = "Réponses justes : " + ", ".join(correct_answers)
+                        current_index += 1
+                        container.clear()
+                        show_question()
+
+                    def handle_enter(event):
+                        if event.key == "Enter":
+                            validate_answer(None)
+
+                    document["submit-answer"].bind("click", validate_answer)
+                    document["user-answer"].bind("keypress", handle_enter)
+                else:
+                    container <= html.P(f"Vous avez répondu correctement à {score} question(s) sur {len(questions)}.")
+                    if score >= 5:
+                        container <= html.P("Vous avez répondu juste à au moins 5 questions, je vous invite à porter attention aux lettres des réponses justes, cela ayant un rapport à un code militaire (biip biip,  biip bip,  bip bip bip).")
+                        container <= html.P("Voici un champ de saisie pour définir un mot de passe.")
+                        container <= html.INPUT(type="password", id="password-input", placeholder="Entrez votre mot de passe", Class="password-input")
+                        container <= html.BUTTON("Valider le mot de passe", id="validate-password")
+                        container <= html.P("", id="password-error", Class="error")
+                        document["password-input"].focus()
+
+                        def validate_password(event):
+                            password = document["password-input"].value
+                            error_message = document["password-error"]
+
+                            if password == "phoque":
+                                container <= html.P("Mot de passe correct. Accès accordé !", Class="result")
+                                container <= html.BUTTON("Suivant", id="next-button")
+                                def go_to_next_page(event):
+                                    window.location.href = "indices.html"
+                        
+                                document["next-button"].bind("click", go_to_next_page)
+                            else:
+                                error_message.text = "Mot de passe incorrect. Veuillez réessayer."
+                        
+                        def handle_password_enter(event):
+                          if event.key == "Enter":
+                            validate_password(None)
+
+                        document["validate-password"].bind("click", validate_password)
+                        document["password-input"].bind("keypress", handle_password_enter)
+                    else:
+                        container <= html.BUTTON("Redémarrer le Quiz", id="restart-button")
+
+                    def restart_quiz(event):
+                        start_quiz(None)
+
+                    document["restart-button"].bind("click", restart_quiz)
+
+            show_question()
+
+        document["start-button"].bind("click", start_quiz)
+        
+  </script>
+</body>
+
+</html>
+
+<!-- Un quiz interactif sur la sécurité informatique avec Brython
+Structure générale et fonctionnalités
+Ce code HTML/Python (utilisant Brython) crée un quiz interactif sur la sécurité informatique. Il présente les
+caractéristiques suivantes :
+
+Interface utilisateur simple et intuitive: Le quiz est bien structuré avec des questions, des options de réponse, des
+boutons pour démarrer, valider et redémarrer, ainsi qu'un système d'indice.
+Mécanique de jeu: Les questions sont posées séquentiellement. L'utilisateur sélectionne une réponse, qui est ensuite
+validée. Un score est calculé à la fin du quiz.
+Personnalisation: Le code permet d'ajouter de nouvelles questions et de personnaliser l'apparence du quiz grâce aux
+feuilles de style CSS.
+Fonctionnalité d'indice: Un indice est disponible après un certain délai, et l'utilisateur peut le consulter en cliquant
+sur un bouton.
+Mini-jeu supplémentaire: Si l'utilisateur obtient un certain score, un mini-jeu de décodage est proposé, basé sur les
+réponses correctes.
+Analyse détaillée du code Python
+Le cœur du quiz réside dans le script Python, qui gère la logique du jeu :
+
+Définition des questions: Les questions sont stockées dans une liste de listes, chaque sous-liste contenant la question,
+les options de réponse et la bonne réponse.
+Fonction start_quiz: Cette fonction initialise le quiz, crée l'interface utilisateur pour la première question, et gère
+la logique de passage à la question suivante, de validation des réponses et de calcul du score.
+Validation des réponses: Le code vérifie si la réponse de l'utilisateur correspond à la bonne réponse et met à jour le
+score en conséquence.
+Mini-jeu de décodage: Si le score est suffisant, un mini-jeu est déclenché, demandant à l'utilisateur de trouver un mot
+de passe en se basant sur les réponses correctes.
+Gestion des événements: Le code utilise des événements pour gérer les clics sur les boutons, la saisie de réponses et
+les touches du clavier.
+Utilisation de Brython
+Brython permet d'exécuter du code Python directement dans le navigateur, ce qui rend le développement d'applications web
+interactives plus simple. Dans ce code, Brython est utilisé pour :
+
+Manipuler le DOM: Le code Python peut accéder et modifier les éléments HTML de la page.
+Gérer les événements: Les événements utilisateur (clics, saisie de texte) sont gérés par le code Python.
+Créer une interface dynamique: Le quiz est mis à jour en temps réel en fonction des actions de l'utilisateur.
+Points forts du code
+Structure claire: Le code est bien organisé et facile à comprendre.
+Fonctionnalité complète: Le quiz offre une expérience utilisateur complète avec des fonctionnalités intéressantes.
+Flexibilité: Le code peut être facilement adapté pour créer d'autres types de quiz.
+Utilisation efficace de Brython: Brython est utilisé de manière pertinente pour créer une application web interactive.
+Améliorations possibles
+Amélioration de l'interface: On pourrait personnaliser davantage l'apparence du quiz en ajoutant des animations ou des
+effets visuels.
+Ajout de statistiques: Il serait intéressant d'ajouter un système de statistiques pour suivre les performances des
+joueurs.
+Complexification des questions: On pourrait proposer des questions à choix multiples, des questions ouvertes ou des quiz
+avec plusieurs niveaux de difficulté.
+Intégration avec un système de gestion d'utilisateurs: Pour permettre aux utilisateurs de créer des comptes et de suivre
+leurs progrès. -->
